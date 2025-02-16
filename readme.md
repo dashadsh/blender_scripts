@@ -1,0 +1,1 @@
+Some python scripts for Blender automation
