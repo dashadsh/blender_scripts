@@ -1,3 +1,0 @@
-'''
-Plane rotation - LP simulation
-'''
