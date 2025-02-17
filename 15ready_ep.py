@@ -4,7 +4,7 @@ import csv
 import math
 
 file_path = "/Users/dg/Documents/CODING/mold_wip/MOLD_VINYL.stl"
-output_path = "/Users/dg/Documents/CODING/mold_wip/heights.csv"
+output_path = "/Users/dg/Documents/CODING/mold_wip/heights_10min.csv"
 
 FIRST_FRAME = 1
 FPS = 24
