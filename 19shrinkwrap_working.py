@@ -4,11 +4,12 @@ import csv
 import math
 
 file_path = "/Users/dg/Documents/CODING/mold_wip/MOLD_VINYL.stl"
-output_path = "/Users/dg/Documents/CODING/mold_wip/data.csv"
+output_path_full = "/Users/dg/Documents/CODING/mold_wip/data_full.csv"
+output_path_z_only = "/Users/dg/Documents/CODING/mold_wip/data_z.csv"
 
 FIRST_FRAME = 1
 FPS = 24
-DURATION_MINUTES = 10
+DURATION_MINUTES = 3
 
 DURATION_SECONDS = DURATION_MINUTES * 60
 LAST_FRAME = FIRST_FRAME + (FPS * DURATION_SECONDS)
@@ -56,6 +57,62 @@ def create_dot(name, location, radius, segments):
     
     return dot
 
+def record_coordinates(tracking_dot):
+    """
+    Record coordinates of tracking dot for each frame and save to CSV
+    """
+    coordinates = []
+    z_coordinates = []
+    
+    # Store current frame to restore it later (optional, for user experience)
+    #current_frame = bpy.context.scene.frame_current
+    
+    for frame in range(FIRST_FRAME, LAST_FRAME + 1):
+        bpy.context.scene.frame_set(frame)
+        
+        # Force update of dependency graph to ensure accurate position
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        tracking_dot_evaluated = tracking_dot.evaluated_get(depsgraph)
+        
+        # Get world position
+        world_position = tracking_dot_evaluated.matrix_world.translation
+        
+        coordinates.append({
+            'frame': frame,
+            'z_coordinate': world_position.z,
+            'x_coordinate': world_position.x,
+            'y_coordinate': world_position.y
+        })
+        
+        z_coordinates.append({
+            'frame': frame,
+            'z_coordinate': world_position.z
+        })
+    
+    
+    # Restore original frame
+    #bpy.context.scene.frame_set(current_frame)
+    
+    with open(output_path_full, 'w', newline='') as csvfile:
+        fieldnames = ['frame', 'x_coordinate', 'y_coordinate', 'z_coordinate']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        writer.writeheader()
+        for data in coordinates:
+            writer.writerow(data)
+            
+    with open(output_path_z_only, 'w', newline='') as csvfile:
+        fieldnames = ['frame', 'z_coordinate']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        writer.writeheader()
+        for data in z_coordinates:
+            writer.writerow(data)
+    
+    print(f"Full coordinates saved to {output_path_full}")
+    print(f"Z coordinates only saved to {output_path_z_only}")
+
+
 # dot start porition 0, 148
 # dot end posiition 0, 52
 
@@ -94,3 +151,5 @@ for obj in [vinyl, tracking_dot]:
 #            kfp.interpolation = 'BEZIER'
 #            kfp.handle_left_type = 'AUTO'
 #            kfp.handle_right_type = 'AUTO'
+
+record_coordinates(tracking_dot)
